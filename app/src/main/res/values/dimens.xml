@@ -1,0 +1,15 @@
+<resources>
+    <dimen name="chatLayoutMarginBottom">5dp</dimen>
+    <dimen name="chatCardViewRadius">32dp</dimen>
+    <dimen name="chatCardViewElevation">10dp</dimen>
+    <dimen name="chatAvatarSize">64dp</dimen>
+    <dimen name="chatInfoLayoutMargin">5dp</dimen>
+    <dimen name="chatLastMessageLayoutMargin">5dp</dimen>
+    <dimen name="messageLayoutMarginTop">10dp</dimen>
+    <dimen name="messageContentMarginTop">10dp</dimen>
+    <dimen name="messageContentPadding">16dp</dimen>
+    <dimen name="messageCornersSize">30dp</dimen>
+    <dimen name="messageCornersMarginTop">6.5dp</dimen>
+    <dimen name="messageCornersMarginLeft">-15dp</dimen>
+    <dimen name="messageAvatarSize">30dp</dimen>
+</resources>
