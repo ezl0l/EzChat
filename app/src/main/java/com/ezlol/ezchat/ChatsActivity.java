@@ -16,12 +16,15 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.ezlol.ezchat.models.AccessToken;
 import com.ezlol.ezchat.models.Chat;
 import com.ezlol.ezchat.models.Event;
+import com.ezlol.ezchat.models.Message;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.gson.Gson;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class ChatsActivity extends AppCompatActivity {
@@ -31,6 +34,8 @@ public class ChatsActivity extends AppCompatActivity {
     FloatingActionButton fab;
 
     BroadcastReceiver broadcastReceiver;
+
+    Map<Chat, View> chatViewMap = new HashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,6 +62,25 @@ public class ChatsActivity extends AppCompatActivity {
                             new ChatsTask().execute();
                             break;
 
+                        case "message_send":
+                            Gson gson = new Gson();
+                            Message message = gson.fromJson(gson.toJson(event.model), Message.class);
+
+
+                            Chat chat;
+                            View view;
+                            for(Map.Entry<Chat, View> entry : chatViewMap.entrySet()) {
+                                chat = entry.getKey();
+                                view = entry.getValue();
+
+                                if(chat.id.equals(message.chat_id)) {
+                                    chat.last_message = message;
+                                    chatViewMap.replace(chat, chat.getView(ChatsActivity.this));
+                                    break;
+                                }
+                            }
+                            drawChats(chatViewMap.keySet().toArray(new Chat[0]));
+                            break;
                     }
                 }
             }

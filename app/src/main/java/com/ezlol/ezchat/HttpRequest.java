@@ -1,22 +1,16 @@
 package com.ezlol.ezchat;
 
-import android.util.Log;
-
 import androidx.annotation.NonNull;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.net.CookieManager;
-import java.net.CookiePolicy;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import okhttp3.FormBody;
 import okhttp3.Headers;
-import okhttp3.JavaNetCookieJar;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -30,7 +24,7 @@ class Requests {
     public static Response get(String url, Map<String, String> headers) {
         try {
             OkHttpClient client = new OkHttpClient.Builder()
-                    .connectTimeout(30, TimeUnit.SECONDS)
+                    .connectTimeout(5, TimeUnit.SECONDS)
                     .readTimeout(30, TimeUnit.SECONDS)
                     .writeTimeout(30, TimeUnit.SECONDS).build();
             Headers headersBuild = Headers.of(headers);

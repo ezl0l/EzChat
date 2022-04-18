@@ -2,6 +2,7 @@ package com.ezlol.ezchat.models;
 
 import android.content.Context;
 import android.graphics.Typeface;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -83,10 +84,13 @@ public class Chat {
         TextView chatLastMessageTextView = new TextView(context);
         chatLastMessageTextView.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT));
+        chatLastMessageTextView.setEllipsize(TextUtils.TruncateAt.END);
+        chatLastMessageTextView.setMaxLines(1);
 
         TextView chatLastMessageUsernameTextView = new TextView(context);
-        chatLastMessageTextView.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+        chatLastMessageUsernameTextView.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT));
+
 
         if(last_message != null) {
             Log.d("Chat", last_message.content);

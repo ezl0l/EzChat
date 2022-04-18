@@ -15,21 +15,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <LinearLayout
-            android:id="@+id/dialogTitle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/dialogUsername"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:text="Username"
-                android:textSize="15sp"
-                android:textStyle="bold" />
-        </LinearLayout>
+        <include layout="@layout/dialog_toolbar" />
 
         <ScrollView
             android:id="@+id/scrollView"
@@ -43,91 +29,57 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:paddingStart="10dp"
-                android:paddingEnd="10dp">
-
-                <LinearLayout
-                    android:id="@+id/layout1"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="end"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:id="@+id/textView"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="10dp"
-                        android:background="@drawable/rounded_corner"
-                        android:padding="16dp"
-                        android:text="afffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffafffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
-                        android:textColor="#000" />
-
-                    <ImageView
-                        android:id="@+id/imageView2"
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:src="@mipmap/ic_launcher" />
-
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/layout2"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="start"
-                    android:orientation="horizontal">
-
-                    <ImageView
-                        android:id="@+id/imageVi1ew2"
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:layout_gravity="bottom"
-                        android:src="@mipmap/ic_launcher" />
-
-                    <TextView
-                        android:id="@+id/textVi1ew"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="10dp"
-                        android:background="@drawable/rounded_corner"
-                        android:padding="16dp"
-                        android:text="afffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffafffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
-                        android:textColor="#000" />
-
-                </LinearLayout>
-            </LinearLayout>
+                android:paddingEnd="10dp"/>
         </ScrollView>
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
+            android:minHeight="40dp"
             android:gravity="bottom"
+            android:orientation="horizontal"
             android:paddingLeft="5dp"
             android:paddingRight="5dp">
 
             <ImageView
                 android:layout_width="25dp"
                 android:layout_height="25dp"
-                android:layout_gravity="center_vertical"
+                android:layout_gravity="bottom"
+                android:layout_marginBottom="5dp"
                 android:src="@drawable/ic_clip" />
 
             <EditText
                 android:id="@+id/messageEditText"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
                 android:layout_marginLeft="5dp"
+                android:layout_weight="1"
                 android:background="@color/white"
                 android:hint="Message"
+                android:maxLines="6"
                 android:textColorHint="#B4B4B4" />
 
             <ImageView
                 android:id="@+id/sendMessageButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
+                android:layout_gravity="bottom"
+                android:layout_marginBottom="5dp"
                 android:layout_weight="5"
                 android:src="@android:drawable/ic_menu_send" />
         </LinearLayout>
     </LinearLayout>
+
+    <RelativeLayout
+        android:id="@+id/progress_circular"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        android:gravity="center_horizontal|center_vertical">
+
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </RelativeLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

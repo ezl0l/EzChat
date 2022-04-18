@@ -23,7 +23,8 @@
 
         <activity
             android:name=".DialogActivity"
-            android:exported="true" />
+            android:exported="true"
+            android:theme="@style/Theme.EzChat.NoActionBar"/>
         <activity
             android:name=".StartActivity"
             android:exported="true">
