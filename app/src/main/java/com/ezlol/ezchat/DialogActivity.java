@@ -83,12 +83,6 @@ public class DialogActivity extends AppCompatActivity implements View.OnClickLis
 
         toolbarBack.setOnClickListener((View v) -> finish());
 
-        messageEditText.setOnFocusChangeListener((view, b) -> {
-            scrollView.post(() ->
-                    scrollView.fullScroll(ScrollView.FOCUS_DOWN));
-            Log.d("M", b + "");
-        });
-
         sendMessageButton.setOnClickListener(this);
 
         sendMessageButton.setEnabled(false);

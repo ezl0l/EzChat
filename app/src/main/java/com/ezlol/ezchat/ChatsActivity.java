@@ -6,8 +6,10 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
@@ -33,6 +35,8 @@ public class ChatsActivity extends AppCompatActivity {
     LinearLayout chatsLayout;
     FloatingActionButton fab;
 
+    ImageView logoutButton;
+
     BroadcastReceiver broadcastReceiver;
 
     Map<Chat, View> chatViewMap = new HashMap<>();
@@ -41,6 +45,8 @@ public class ChatsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chats);
+
+        logoutButton = findViewById(R.id.logout_button);
 
         chatsLayout = findViewById(R.id.chats);
         fab = findViewById(R.id.fab);
@@ -66,13 +72,7 @@ public class ChatsActivity extends AppCompatActivity {
                             Gson gson = new Gson();
                             Message message = gson.fromJson(gson.toJson(event.model), Message.class);
 
-
-                            Chat chat;
-                            View view;
-                            for(Map.Entry<Chat, View> entry : chatViewMap.entrySet()) {
-                                chat = entry.getKey();
-                                view = entry.getValue();
-
+                            for(Chat chat : chatViewMap.keySet()) {
                                 if(chat.id.equals(message.chat_id)) {
                                     chat.last_message = message;
                                     chatViewMap.replace(chat, chat.getView(ChatsActivity.this));
@@ -85,8 +85,16 @@ public class ChatsActivity extends AppCompatActivity {
                 }
             }
         };
-
         registerReceiver(broadcastReceiver, new IntentFilter(LongPollService.BROADCAST_ACTION));
+
+        logoutButton.setOnClickListener(view -> {
+            PreferenceManager.getDefaultSharedPreferences(this)
+                    .edit()
+                    .putString("accessToken", "")
+                    .apply();
+            startActivity(new Intent(this, StartActivity.class));
+            finish();
+        });
     }
 
     @Override
