@@ -30,6 +30,8 @@ import java.util.Map;
 
 
 public class ChatsActivity extends AppCompatActivity {
+    static boolean isShow = true;
+
     API api;
 
     LinearLayout chatsLayout;
@@ -95,6 +97,18 @@ public class ChatsActivity extends AppCompatActivity {
             startActivity(new Intent(this, StartActivity.class));
             finish();
         });
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        isShow = true;
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        isShow = false;
     }
 
     @Override
