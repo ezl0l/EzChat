@@ -10,6 +10,7 @@ import com.ezlol.ezchat.models.Message;
 import com.ezlol.ezchat.models.User;
 import com.google.gson.Gson;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.HashMap;
@@ -54,8 +55,13 @@ public class API {
         if(response == null)
             return null;
 
-        if(response.getStatusCode() / 200 == 1)
-            return new Gson().fromJson(response.toString(), User.class);
+        if(response.getStatusCode() / 200 == 1) {
+            try {
+                return new Gson().fromJson(new JSONObject(response.toString()).getJSONObject("response").toString(), User.class);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
         lastErrorCode = response.getStatusCode();
         return null;
     }
