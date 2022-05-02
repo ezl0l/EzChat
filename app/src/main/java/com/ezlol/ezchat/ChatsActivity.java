@@ -11,7 +11,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -20,17 +19,15 @@ import com.ezlol.ezchat.models.Chat;
 import com.ezlol.ezchat.models.Event;
 import com.ezlol.ezchat.models.Message;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.gson.Gson;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 
 public class ChatsActivity extends AppCompatActivity {
-    static boolean isShow = true;
+    static boolean isShow = false;
 
     API api;
 
@@ -63,6 +60,8 @@ public class ChatsActivity extends AppCompatActivity {
         broadcastReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
+                Gson gson = new Gson();
+
                 Event[] events = new Gson().fromJson(intent.getExtras().getString("events"), Event[].class);
                 for(Event event : events) {
                     switch(event.type) {
@@ -70,8 +69,7 @@ public class ChatsActivity extends AppCompatActivity {
                             new ChatsTask().execute();
                             break;
 
-                        case "message_send":
-                            Gson gson = new Gson();
+                        case Event.MESSAGE_SEND:
                             Message message = gson.fromJson(gson.toJson(event.model), Message.class);
 
                             for(Chat chat : chatViewMap.keySet()) {
@@ -82,6 +80,18 @@ public class ChatsActivity extends AppCompatActivity {
                                 }
                             }
                             drawChats(chatViewMap.keySet().toArray(new Chat[0]));
+                            break;
+
+                        case Event.MESSAGE_CHANGE_STATUS:
+                            message = gson.fromJson(gson.toJson(event.model), Message.class);
+                            if(message.status.equals(Message.DELETED)) {
+                                for (Chat chat : chatViewMap.keySet()) {
+                                    if (chat.id.equals(message.chat_id)) {
+                                        new ChatUpdateLastMsgTask(chat).execute();
+                                        break;
+                                    }
+                                }
+                            }
                             break;
                     }
                 }
@@ -119,8 +129,12 @@ public class ChatsActivity extends AppCompatActivity {
 
     private void drawChats(Chat[] chats) {
         chatsLayout.removeAllViews();
+        chatViewMap.clear();
         for(Chat chat : chats) {
             View view = chat.getView(ChatsActivity.this);
+
+            chatViewMap.put(chat, view);
+
             view.setOnClickListener(view1 -> {
                 startActivity(new Intent(ChatsActivity.this, DialogActivity.class)
                         .putExtra("accessToken", new Gson().toJson(api.accessToken, AccessToken.class))
@@ -151,6 +165,27 @@ public class ChatsActivity extends AppCompatActivity {
                 return;
             }
             drawChats(chats);
+        }
+    }
+
+    class ChatUpdateLastMsgTask extends AsyncTask<Void, Void, Message[]> {
+        Chat chat;
+
+        public ChatUpdateLastMsgTask(Chat chat) {
+            this.chat = chat;
+        }
+
+        @Override
+        protected Message[] doInBackground(Void... voids) {
+            return api.getMessages(chat.id, 1);
+        }
+
+        @Override
+        protected void onPostExecute(Message[] messages) {
+            super.onPostExecute(messages);
+            if(messages == null || messages.length == 0) return;
+            chat.last_message = messages[0];
+            chatViewMap.replace(chat, chat.getView(ChatsActivity.this));
         }
     }
 }

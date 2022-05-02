@@ -5,23 +5,22 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
 import com.ezlol.ezchat.models.AccessToken;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.gson.Gson;
 
 public class StartActivity extends AppCompatActivity implements View.OnClickListener {
+    public static final String DEFAULT_NOTIFICATION_CHANNEL = "DEFAULT_NOTIFICATION_CHANNEL";
+    public static final String TRAY_NOTIFICATION_CHANNEL = "TRAY_NOTIFICATION_CHANNEL";
+
     EditText usernameEditText, passwordEditText;
     ProgressBar loginProgressBar;
     Button loginButton;
@@ -33,11 +32,14 @@ public class StartActivity extends AppCompatActivity implements View.OnClickList
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_start);
 
-        NotificationChannel channel = new NotificationChannel("CHANNEL",
-                "NOTIFICATION_CHANNEL",
+        NotificationChannel channel = new NotificationChannel(DEFAULT_NOTIFICATION_CHANNEL,
+                "Notifications",
                 NotificationManager.IMPORTANCE_HIGH);
         NotificationManager notificationManager = getSystemService(NotificationManager.class);
         notificationManager.createNotificationChannel(channel);
+        notificationManager.createNotificationChannel(new NotificationChannel(TRAY_NOTIFICATION_CHANNEL,
+                "Tray",
+                NotificationManager.IMPORTANCE_NONE));
 
         String accessTokenJson = PreferenceManager.getDefaultSharedPreferences(this)
                 .getString("accessToken", null);

@@ -14,6 +14,10 @@ import com.ezlol.ezchat.R;
 import com.ezlol.ezchat.Utils;
 
 public class Message {
+    public static final String UNREAD = "UNREAD";
+    public static final String READ = "READ";
+    public static final String DELETED = "DELETED";
+
     public Integer id;
     public Integer user_id;
     public Integer chat_id;
@@ -52,6 +56,7 @@ public class Message {
                 .getDimension(R.dimen.messageContentMarginTop), isFromThisUser ? 10 : 0, 0);
         secondLayout.setLayoutParams(params1);
         secondLayout.setBackgroundResource(R.drawable.rounded_corner);
+        secondLayout.setOrientation(LinearLayout.HORIZONTAL);
 
         TextView contentTextView = new TextView(context);
         LinearLayout.LayoutParams contentTextViewParams = new LinearLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT,
@@ -66,24 +71,42 @@ public class Message {
                 .getDimension(R.dimen.messageContentPadding);
         contentTextView.setPadding(padding, padding, padding, padding);
 
+        LinearLayout thirdLayout = new LinearLayout(context);
+        LinearLayout.LayoutParams thirdLayoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT);
+        thirdLayoutParams.gravity = Gravity.BOTTOM | Gravity.END;
+        thirdLayoutParams.setMargins(0, 0, (int) context.getResources()
+                        .getDimension(R.dimen.messageTimeTextMarginRight),
+                (int) context.getResources()
+                        .getDimension(R.dimen.messageTimeTextMarginBottom));
+        thirdLayout.setLayoutParams(thirdLayoutParams);
+
+        thirdLayout.setOrientation(LinearLayout.HORIZONTAL);
+
         TextView timeTextView = new TextView(context);
         LinearLayout.LayoutParams linParams = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.WRAP_CONTENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT);
 
-        linParams.gravity = Gravity.BOTTOM | Gravity.END;
         linParams.setMargins(0, 0, (int) context.getResources()
-                .getDimension(R.dimen.messageTimeTextMarginRight),
-                (int) context.getResources()
-                .getDimension(R.dimen.messageTimeTextMarginBottom));
+                        .getDimension(R.dimen.messageTimeTextMarginRight), 0);
+
         timeTextView.setLayoutParams(linParams);
 
         timeTextView.setTextSize(TypedValue.COMPLEX_UNIT_PX, (int) context.getResources()
                 .getDimension(R.dimen.messageTimeTextSize));
         timeTextView.setText(Utils.timestampToDatetime(time));
 
+        ImageView readImageView = new ImageView(context);
+        readImageView.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT));
+        readImageView.setImageResource(status.equals(READ) && isFromThisUser ? R.drawable.ic_checkmark : 0);
+
+        thirdLayout.addView(timeTextView);
+        thirdLayout.addView(readImageView);
+
         secondLayout.addView(contentTextView);
-        secondLayout.addView(timeTextView);
+        secondLayout.addView(thirdLayout);
 
         ImageView avatarImageView = new ImageView(context);
         LinearLayout.LayoutParams params3 = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,

@@ -19,8 +19,8 @@ import java.util.Map;
 public class API {
     static class AuthException extends Exception {}
 
-    public static final String SERVER_URL = "http://192.168.1.17:8083/";
-    //public static final String SERVER_URL = "http://85.12.218.165:8083/";
+    public static final String SERVER_URL = "http://10.0.2.2:8083/";
+//    public static final String SERVER_URL = "http://85.12.218.165:8083/";
 
     AccessToken accessToken;
     Map<String, String> headers = new HashMap<>();
@@ -56,11 +56,7 @@ public class API {
             return null;
 
         if(response.getStatusCode() / 200 == 1) {
-            try {
-                return new Gson().fromJson(new JSONObject(response.toString()).getJSONObject("response").toString(), User.class);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
+            return new Gson().fromJson(response.toString(), User.class);
         }
         lastErrorCode = response.getStatusCode();
         return null;

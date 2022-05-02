@@ -1,9 +1,9 @@
 package com.ezlol.ezchat;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -12,8 +12,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.ContextMenu;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
@@ -36,6 +34,8 @@ public class DialogActivity extends AppCompatActivity implements View.OnClickLis
     public static final int CONTEXT_MENU_MESSAGE_DELETE = 1;
     public static final int CONTEXT_MENU_MESSAGE_EDIT = 2;
 
+    public static boolean isShow = false;
+
     API api;
     Chat chat;
 
@@ -44,6 +44,8 @@ public class DialogActivity extends AppCompatActivity implements View.OnClickLis
 
     EditText messageEditText;
     ImageView sendMessageButton, toolbarBack, toolbarDialogImage;
+
+    TextView toolbarDialogName, toolbarDialogStatus;
 
     RelativeLayout progressCircular;
 
@@ -58,6 +60,8 @@ public class DialogActivity extends AppCompatActivity implements View.OnClickLis
 
         toolbarBack = findViewById(R.id.toolbar_back);
         toolbarDialogImage = findViewById(R.id.toolbar_dialog_image);
+        toolbarDialogName = findViewById(R.id.toolbar_dialog_name);
+        toolbarDialogStatus = findViewById(R.id.toolbar_dialog_status);
 
         scrollView = findViewById(R.id.scrollView);
         messagesLayout = findViewById(R.id.messages);
@@ -73,7 +77,11 @@ public class DialogActivity extends AppCompatActivity implements View.OnClickLis
                 Event[] events = new Gson().fromJson(intent.getExtras().getString("events"), Event[].class);
                 Log.d("DialogActivity", "Received events count: " + events.length);
                 for(Event event : events) {
-                    if(event.type.startsWith("message")) {
+                    if(event.type.equals(Event.MESSAGE_SEND)) {
+                        Gson gson = new Gson();
+                        Message message = gson.fromJson(gson.toJson(event.model), Message.class);
+                        addMessages(new Message[]{message});
+                    }else if(event.type.equals(Event.MESSAGE_CHANGE_STATUS)) {
                         new ChatMessagesTask().execute();
                     }
                 }
@@ -90,7 +98,25 @@ public class DialogActivity extends AppCompatActivity implements View.OnClickLis
         Bundle bundle = getIntent().getExtras();
         api = new API(new Gson().fromJson(bundle.getString("accessToken"), AccessToken.class));
 
-        new ChatInfoTask().execute(bundle.getInt("peer_id"));
+        int peer_id = bundle.getInt("peer_id");
+
+        NotificationManager notificationManager =
+                (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        notificationManager.cancel(peer_id);
+
+        new ChatInfoTask().execute(peer_id);
+    }
+
+    @Override
+    protected void onStart() {
+        isShow = true;
+        super.onStart();
+    }
+
+    @Override
+    protected void onStop() {
+        isShow = false;
+        super.onStop();
     }
 
     @Override
@@ -101,7 +127,9 @@ public class DialogActivity extends AppCompatActivity implements View.OnClickLis
         if(message == null)
             return;
 
-        menu.add(CONTEXT_MENU_MESSAGE_EDIT, message.id, message.chat_id, "Edit");
+        if(message.user_id != api.accessToken.user_id)
+            return;
+
         menu.add(CONTEXT_MENU_MESSAGE_DELETE, message.id, message.chat_id, "Delete");
     }
 
@@ -109,27 +137,56 @@ public class DialogActivity extends AppCompatActivity implements View.OnClickLis
     public boolean onContextItemSelected(@NonNull MenuItem item) {
         Log.d("ContextMenu", item.getItemId() + " " + item.getOrder() + " " + item.getGroupId());
         Message message = new Message(item.getItemId(), null, null, null, null, null);
-        new DeleteMessageTask().execute(message);
-        return false;
+        switch(item.getGroupId()) {
+            case CONTEXT_MENU_MESSAGE_DELETE:
+                new DeleteMessageTask().execute(message);
+                break;
+
+            case CONTEXT_MENU_MESSAGE_EDIT:
+                new EditMessageTask().execute(message);
+                break;
+        }
+
+        return true;
     }
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
         unregisterReceiver(broadcastReceiver);
+        super.onDestroy();
     }
 
     @Override
     public void onClick(View view) {
         if(view.getId() == R.id.sendMessageButton) {
-            Message message = new Message(null, null, chat.id, messageEditText.getText().toString(), null, null);
-            new SendMessageTask().execute(message);
+            String content = messageEditText.getText().toString();
+            if(content.length() > 0) {
+                Message message = new Message(null, null, chat.id, content, null, null);
+                new SendMessageTask().execute(message);
+            }
         }
+    }
+
+    private void addMessages(Message[] messages) {
+        for(Message message : messages) {
+            View view = message.getView(DialogActivity.this,
+                    message.user_id == api.accessToken.user_id);
+            if(view != null) {
+                messageViewMap.put(view, message);
+                registerForContextMenu(view);
+                messagesLayout.addView(view);
+            }
+        }
+        scrollView.post(() -> {
+            scrollView.fullScroll(ScrollView.FOCUS_DOWN);
+            messagesLayout.setVisibility(View.VISIBLE);
+        });
     }
 
     private void drawMessages(Message[] messages) {
         Log.d("DialogActivity.drawMessages", new Gson().toJson(messages, Message[].class));
         messagesLayout.removeAllViews();
+        messageViewMap.clear();
         for(Message message : messages) {
             View view = message.getView(DialogActivity.this, message.user_id == api.accessToken.user_id);
             if(view != null) {
@@ -177,16 +234,21 @@ public class DialogActivity extends AppCompatActivity implements View.OnClickLis
         @Override
         protected void onPostExecute(Message message) {
             super.onPostExecute(message);
-            Log.d("SendMessage", api.getLastErrorCode() + "");
-            if(message != null) {
-                View view = message.getView(DialogActivity.this, true);
-                if(view != null) {
-                    messageViewMap.put(view, message);
-                    registerForContextMenu(view);
+        }
+    }
 
-                    messagesLayout.addView(view);
-                }
-            }
+    class EditMessageTask extends AsyncTask<Message, Void, Message> {
+        @Override
+        protected Message doInBackground(Message... messages) {
+            return api.readMessage(messages[0]);
+        }
+
+        @Override
+        protected void onPostExecute(Message message) {
+            super.onPostExecute(message);
+            if(message == null)
+                return;
+            messageEditText.setText(message.content);
         }
     }
 
@@ -208,6 +270,8 @@ public class DialogActivity extends AppCompatActivity implements View.OnClickLis
             super.onPostExecute(chat);
             DialogActivity.this.chat = chat;
 
+            toolbarDialogName.setText(chat.name == null ? "Somebody" : chat.name); //todo
+
             sendMessageButton.setEnabled(true);
 
             Log.d("ChatInfoTask", new Gson().toJson(chat, Chat.class));
@@ -218,7 +282,13 @@ public class DialogActivity extends AppCompatActivity implements View.OnClickLis
     class ChatMessagesTask extends AsyncTask<Void, Void, Message[]> {
         @Override
         protected Message[] doInBackground(Void... voids) {
-            return api.getMessages(chat.id, 100, 0);
+            Message[] messages = api.getMessages(chat.id, 100, 0);
+            if(messages != null && messages.length > 0) {
+                Message message = api.readMessage(messages[messages.length - 1]);
+                if(message != null)
+                    messages[messages.length - 1] = message;
+            }
+            return messages;
         }
 
         @Override

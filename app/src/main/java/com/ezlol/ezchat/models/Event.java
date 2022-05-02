@@ -1,8 +1,11 @@
 package com.ezlol.ezchat.models;
 
 public class Event {
+    public static final String MESSAGE_SEND = "message_send";
+    public static final String MESSAGE_CHANGE_STATUS = "message_change_status";
+
     public String type;
-    public Message model;
+    public Object model;
     public Integer[] affected_users;
     public int time;
 
